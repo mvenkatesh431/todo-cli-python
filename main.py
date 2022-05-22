@@ -1,12 +1,20 @@
+from unicodedata import category
 import typer
-from todoModel import Todo
+from todoModel import *
 from db import add_todo, get_todo_list
+from rich.console import Console
+from rich.table import Table
+import random
+
 
 # To-do App Version
 __version__ = "0.5.0"
 
 # Initialize the Typer app
 app = typer.Typer()
+
+# Create console object
+console = Console()
 
 @app.command(short_help="Add a To-do to ToDo List")
 def add(name: str, category: str, priority: int = typer.Argument(3)):
@@ -37,25 +45,51 @@ def list():
         return
     
     # print(todo_list)
+    # Table Ref - https://rich.readthedocs.io/en/stable/reference/table.html#rich.table.Table
+    # Rich Color ref - https://rich.readthedocs.io/en/stable/appendix/colors.html
 
-    typer.secho("\nTo-Do List:\n", fg=typer.colors.BLUE, bold=True)
-    columns = (
-        "ID.  ",
-        "| Name  ",
-        "| Category  ",
-        "| Priority  ",
-        "| Status  ",
-        "| Creation Time  ",
-        "| Completion Time  ",
-    )
-    headers = "".join(columns)
-    typer.secho(headers, fg=typer.colors.BLUE, bold=True)
-    typer.secho("-" * len(headers), fg=typer.colors.BLUE)
+    # table = Table(title="Todo List",  style="bold light_sea_green")
 
+    table = Table(title="📝 Todo List ! 🗒️", title_style ="bold cyan", show_header=True, header_style="bold indian_red")
+    table.add_column("S. No.", style="cyan", justify="center", no_wrap=True)
+    table.add_column("Name", justify="Left")
+    table.add_column("Category", justify="left")
+    table.add_column("Priority", justify="center")
+    table.add_column("Status", justify="center", style="green")
+    table.add_column("Created at", justify='center')
+    table.add_column("Completed at", justify='center')
+
+    category_color_map = {}
+
+    # Lets add the rows from the 'todo_list'
     for id, todo in enumerate(todo_list, 1):
-        print(id, todo)
-        
+        status = '✅' if todo.status == COMPLETED else '❌'
+        clr = "white"
+        # clr = category_color_map.get(todo.category, get_random_color())
+        if todo.category not in category_color_map:
+            clr = get_random_color()
+            category_color_map[todo.category] = clr
+        else:
+            clr = category_color_map.get(todo.category)
 
+        pclr = get_priority_color(todo.priority)
+    
+        table.add_row(str(id), todo.name, f'[{clr}]{todo.category}[/{clr}]', f'[{pclr}]{str(todo.priority)}[/{pclr}]',
+                        status, todo.creation_time, todo.completion_time )
+
+    console.print(table)
+
+def get_random_color():
+    richColors = [ 'deep_pink4', 'plum2', 'dark_orange', 'magenta', 'cornflower_blue', \
+                    'bright_green', 'grey50', 'light_pink3', 'violet', 'orchid', 'gold1', \
+                    'white', 'magenta', 'orange4', 'yellow', 'cyan', 'red']
+    return random.choice(richColors)
+
+def get_priority_color(priority):
+    p_map = {1: 'red', 2:'magenta', 3:'blue', 4:'cyan', 5:'green'}
+    if priority in p_map:
+        return p_map[priority]
+    return 'green'
 
 @app.command(short_help="Remove all To-do's")
 def clear():
