@@ -1,5 +1,6 @@
 import sqlite3
-from todoModel import Todo
+from todoModel import COMPLETED, Todo
+import datetime
 
 # connect to sqlite db
 conn = sqlite3.connect("todos.db")
@@ -39,8 +40,8 @@ def add_todo(todo: Todo):
             insert_query = """INSERT INTO todos
                             (name, category, priority, status, position, creation_time, completion_time) 
                             VALUES (?, ?, ?, ?, ?, ?, ?);"""
-            data_tuple = (todo.name, todo.category, todo.priority, todo.status, todo.position, todo.creation_time, todo.completion_time)
-            c.execute(insert_query, data_tuple)
+            data = (todo.name, todo.category, todo.priority, todo.status, todo.position, todo.creation_time, todo.completion_time)
+            c.execute(insert_query, data)
     except sqlite3.Error as error:
         print("Failed to insert to table")
 
@@ -56,4 +57,67 @@ def get_todo_list():
     for item in allTodos:
         todos.append(Todo(*item))
     return todos
+
+def update_todo(position, params):
+    '''
+        Update Todo Name, Category and Priority using TodoID.
+    '''
+    fields_to_set = []
+    field_values = []
+    # loop thru the params passed
+    for key in params:
+        if params.get(key) is not None:
+            # build up the SET statement using the param keys
+            fields_to_set.append(key + "=?")
+            # save the values to be used with the SET statement
+            field_values.append(params[key])
+        
+    # join the SET statement together
+    set_statement = ", ".join(fields_to_set)
+    field_values.append(position)
+    cmd = "UPDATE todos SET "+set_statement+" WHERE position=?"
     
+    # Update the db.
+    #print(cmd, tuple(field_values))
+    with conn:
+        c.execute(cmd, field_values)
+
+def complete_todo(position):
+    '''
+        Mark todo as 'COMPLETE'
+    '''
+    with conn:
+        update_query = """Update todos set status = ?, completion_time = ? where position = ?"""
+        data = (COMPLETED, datetime.datetime.now().isoformat(), position)
+        c.execute(update_query, data)
+
+def delete_todo(position):
+    '''
+        Delete Todo from To-Do List
+    '''
+    c.execute('select count(*) from todos')
+    count = c.fetchone()[0]
+
+    with conn:
+        delete_query = """DELETE from todos where position = ?"""
+        c.execute(delete_query, (position,))   # second argument tuple
+
+        # Move the position of all entries after 'position' by '-1'
+        for pos in range(position+1, count):
+            # print("calling change_position with old_position:", pos, "new_position", pos-1)
+            change_position(pos, pos-1)
+
+
+def change_position(old_position, new_position):
+    update_query = """Update todos set position = ? where position = ?"""
+    data = (new_position, old_position)
+    c.execute(update_query, data)
+    conn.commit()
+
+def remove_all_todos():
+    '''
+    remove_all_todos from the Todo List
+    '''
+    drop_query = """DROP TABLE todos;"""
+    with conn:
+        c.execute(drop_query)

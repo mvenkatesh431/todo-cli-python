@@ -1,7 +1,7 @@
 from unicodedata import category
 import typer
 from todoModel import *
-from db import add_todo, get_todo_list
+from db import add_todo, get_todo_list, complete_todo, delete_todo, remove_all_todos, update_todo
 from rich.console import Console
 from rich.table import Table
 import random
@@ -18,21 +18,32 @@ console = Console()
 
 @app.command(short_help="Add a To-do to ToDo List")
 def add(name: str, category: str, priority: int = typer.Argument(3)):
-    typer.echo(f"Adding 'Name:{name}, Category:{category}, Priority:{priority}' To-Do List")
+    typer.echo(f"Adding 'Name:{name}, Category:{category}, Priority:{priority}' to To-Do List")
     todoItem = Todo(name, category, priority)
     add_todo(todoItem)
+    list()
 
-@app.command(short_help="Update a To-do using TODOID")
-def update(position: int, name: str = None, category: str = None):
-    typer.echo(f"Updating Todo at {position}")
+# User can update TodoName, Category and Priority.
+@app.command(short_help="Update a To-do(Name, category and priority) using TODOID")
+def update(position: int, name: str = None, category: str = None, priority: int = None):
+    '''
+        ex: python main.py update 4 --name="Complete To-do project" --category='Python'  --priority=1
+    '''
+    typer.echo(f"Updating Todo at {position}. (Note: 'If Position is invalid, No changes will be made.')")
+    update_todo(position-1, {"name":name, "category":category, "priority":priority})
+    list()
 
 @app.command(short_help="Delete a To-do from ToDo List using it's TODOID")
 def delete(position: int):
     typer.echo(f"Deleting Todo at {position}")
+    delete_todo(position-1)
+    list()
 
 @app.command(short_help="Complete a To-do by marking it 'Done' using TODOID")
 def complete(position: int):
     typer.echo(f"Marking Todo at {position} as 'Done'")
+    complete_todo(position-1)
+    list()
 
 @app.command(short_help="List all To-do's")
 def list():
@@ -41,14 +52,12 @@ def list():
 
     # check if the todo_list is empty
     if len(todo_list) == 0:
-        typer.secho ("There are no tasks in the to-do list yet", fg=typer.colors.RED)
+        typer.secho("There are no tasks in the to-do list yet", fg=typer.colors.RED)
         return
     
-    # print(todo_list)
+    # Lets create a Table using the Rich Table
     # Table Ref - https://rich.readthedocs.io/en/stable/reference/table.html#rich.table.Table
     # Rich Color ref - https://rich.readthedocs.io/en/stable/appendix/colors.html
-
-    # table = Table(title="Todo List",  style="bold light_sea_green")
 
     table = Table(title="📝 Todo List ! 🗒️", title_style ="bold cyan", show_header=True, header_style="bold indian_red")
     table.add_column("S. No.", style="cyan", justify="center", no_wrap=True)
@@ -79,6 +88,17 @@ def list():
 
     console.print(table)
 
+@app.command(short_help="Remove all To-do's")
+def clear():
+    typer.secho(f"Deleting all To-do's !!!", fg=typer.colors.RED)
+    delete = typer.confirm("Are you sure you want to delete all To-Dos?", abort=True)
+    remove_all_todos()
+    typer.echo("All To-Dos were removed")
+    
+@app.command(short_help="Display the version")
+def version():
+    typer.echo(f"Version: {__version__}")
+
 def get_random_color():
     richColors = [ 'deep_pink4', 'plum2', 'dark_orange', 'magenta', 'cornflower_blue', \
                     'bright_green', 'grey50', 'light_pink3', 'violet', 'orchid', 'gold1', \
@@ -90,14 +110,6 @@ def get_priority_color(priority):
     if priority in p_map:
         return p_map[priority]
     return 'green'
-
-@app.command(short_help="Remove all To-do's")
-def clear():
-    typer.echo(f"Removing all To-do's")
-    
-@app.command(short_help="Display the version")
-def version():
-    typer.echo(f"Version: {__version__}")
 
 if __name__ == "__main__":
     app()
