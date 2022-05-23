@@ -1,4 +1,3 @@
-from unicodedata import category
 import typer
 from todoModel import *
 from db import add_todo, get_todo_list, complete_todo, delete_todo, remove_all_todos, update_todo
@@ -17,7 +16,7 @@ app = typer.Typer()
 console = Console()
 
 @app.command(short_help="Add a To-do to ToDo List")
-def add(name: str, category: str, priority: int = typer.Argument(3)):
+def add(name: str = typer.Option(...), category: str = typer.Option(...), priority: int = typer.Option(3)):
     typer.echo(f"Adding 'Name:{name}, Category:{category}, Priority:{priority}' to To-Do List")
     todoItem = Todo(name, category, priority)
     add_todo(todoItem)
