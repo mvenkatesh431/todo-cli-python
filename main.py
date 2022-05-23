@@ -15,16 +15,21 @@ app = typer.Typer()
 # Create console object
 console = Console()
 
+# Typer options reference - https://typer.tiangolo.com/tutorial/options/help/
 @app.command(short_help="Add a To-do to ToDo List")
-def add(name: str = typer.Option(...), category: str = typer.Option(...), priority: int = typer.Option(3)):
+def add(name: str = typer.Option(..., "--name", "-n"),
+            category: str = typer.Option(..., "--category", "-c"), 
+            priority: int = typer.Option(3, "--priority", "-p")):
     typer.echo(f"Adding 'Name:{name}, Category:{category}, Priority:{priority}' to To-Do List")
     todoItem = Todo(name, category, priority)
     add_todo(todoItem)
     list()
 
 # User can update TodoName, Category and Priority.
-@app.command(short_help="Update a To-do(Name, category and priority) using TODOID")
-def update(position: int, name: str = None, category: str = None, priority: int = None):
+@app.command(short_help="Update a T o-do(Name, category and priority) using TODOID")
+def update(position: int, name: str = typer.Option(None, "--name", "-n"),  
+                category: str = typer.Option(None, "--category", "-c"),
+                priority: int = typer.Option(None, "--priority", "-p")):
     '''
         ex: python main.py update 4 --name="Complete To-do project" --category='Python'  --priority=1
     '''
