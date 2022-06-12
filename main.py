@@ -26,7 +26,7 @@ def add(name: str = typer.Option(..., "--name", "-n"),
     list()
 
 # User can update TodoName, Category and Priority.
-@app.command(short_help="Update a T o-do(Name, category and priority) using TODOID")
+@app.command(short_help="Update a To-do(Name, category and priority) using TODOID")
 def update(position: int, name: str = typer.Option(None, "--name", "-n"),  
                 category: str = typer.Option(None, "--category", "-c"),
                 priority: int = typer.Option(None, "--priority", "-p")):
@@ -34,19 +34,19 @@ def update(position: int, name: str = typer.Option(None, "--name", "-n"),
         ex: python main.py update 4 --name="Complete To-do project" --category='Python'  --priority=1
     '''
     typer.echo(f"Updating Todo at {position}. (Note: 'If Position is invalid, No changes will be made.')")
-    update_todo(position-1, {"name":name, "category":category, "priority":priority})
+    update_todo(position, {"name":name, "category":category, "priority":priority})
     list()
 
 @app.command(short_help="Delete a To-do from ToDo List using it's TODOID")
 def delete(position: int):
     typer.echo(f"Deleting Todo at {position}")
-    delete_todo(position-1)
+    delete_todo(position)
     list()
 
 @app.command(short_help="Complete a To-do by marking it 'Done' using TODOID")
 def complete(position: int):
     typer.echo(f"Marking Todo at {position} as 'Done'")
-    complete_todo(position-1)
+    complete_todo(position)
     list()
 
 @app.command(short_help="List all To-do's")
@@ -87,8 +87,8 @@ def list():
 
         pclr = get_priority_color(todo.priority)
     
-        table.add_row(str(id), todo.name, f'[{clr}]{todo.category}[/{clr}]', f'[{pclr}]{str(todo.priority)}[/{pclr}]',
-                        status, todo.creation_time, todo.completion_time )
+        table.add_row(f"{str(id)} {str(todo.position)}", todo.name, f'[{clr}]{todo.category}[/{clr}]', f'[{pclr}]{str(todo.priority)}[/{pclr}]',
+                        status, str(todo.creation_time), str(todo.completion_time) )
 
     console.print(table)
 

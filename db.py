@@ -1,24 +1,50 @@
 import sqlite3
-from todoModel import COMPLETED, Todo
+from todoModel import OPEN, COMPLETED, Todo
 import datetime
+from sqlalchemy import create_engine
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
-# connect to sqlite db
-conn = sqlite3.connect("todos.db")
-# create cursor object
-c = conn.cursor()
 
-def create_table():
-    c.execute("""CREATE TABLE IF NOT EXISTS todos (
-            name text NOT NULL,
-            category text NOT NULL,
-            priority integer NOT NULL,
-            status integer NOT NULL,
-            position integer PRIMARY KEY,
-            creation_time text,
-            completion_time text
-            )""")
+Base = declarative_base()
+class TodoSQL(Base):
+    """
+    Todo Class defines the todos table schema.
+    """
+    __tablename__ = "todos"
+ 
+    position = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    category = Column(String, nullable=False)
+    priority = Column(Integer)
+    status = Column(Boolean, unique=False, default=OPEN)
+    creation_time = Column(DateTime, default=datetime.datetime.now)
+    completion_time = Column(DateTime)
 
-create_table()
+    #----------------------------------------------------------------------
+    def __init__(self, name, category, priority, creation_time):
+        """"""
+        self.name = name
+        self.category = category
+        self.priority = priority
+    
+    # def __repr__(self):
+    #     return f"{self.position}, {self.name}, {self.category}, {self.priority}, {self.status}, {self.creation_time}, {self.completion_time}"
+
+
+# 'engine' is going to communicate with the sqlite3 DB
+# Engine won't connect now, It will connect whenever we submit a query to DB.
+# creating an Engine through the create_engine() function usually generates a QueuePool.
+# This kind of pool comes configured with some reasonable defaults, like a maximum pool size of 5 connections.
+engine = create_engine('sqlite:///todos.db', echo=False)
+
+# create tables
+Base.metadata.create_all(engine)
+
+# create a Session
+Session = sessionmaker(bind=engine)
+session = Session()
 
 
 def add_todo(todo: Todo):
@@ -26,24 +52,9 @@ def add_todo(todo: Todo):
         Add a new To-do to List 
         Takes 'Todo' Object, Inserts into 'todos.db'
     '''
-    # count(*) will give us the number of Todos
-    # Note count(*) index starts with 1.
-    c.execute("select count(*) FROM todos")
-    cnt = c.fetchone()[0]
-
-    # if we already have todos use 'count' otherwise it is first todo.
-    todo.position = cnt if cnt else 0
-
-    # Insert todo at 'todo.position'
-    try:
-        with conn:
-            insert_query = """INSERT INTO todos
-                            (name, category, priority, status, position, creation_time, completion_time) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?);"""
-            data = (todo.name, todo.category, todo.priority, todo.status, todo.position, todo.creation_time, todo.completion_time)
-            c.execute(insert_query, data)
-    except sqlite3.Error as error:
-        print("Failed to insert to table")
+    todoItem = TodoSQL(todo.name, todo.category, todo.priority, todo.creation_time)
+    session.add(todoItem)
+    session.commit()
 
 
 def get_todo_list():
@@ -51,73 +62,54 @@ def get_todo_list():
         get_todo_list - Read all todos from 'todos.db' and return it as List[Todo]
     '''
     todos = []
-    c.execute("select * from todos")
-    allTodos = c.fetchall()
-
-    for item in allTodos:
-        todos.append(Todo(*item))
+    for todoItem in session.query(TodoSQL).order_by(TodoSQL.position):
+        todos.append(Todo(todoItem.name, todoItem.category, todoItem.priority, todoItem.status, todoItem.position, todoItem.creation_time, todoItem.completion_time))
     return todos
 
 def update_todo(position, params):
     '''
         Update Todo Name, Category and Priority using TodoID.
     '''
-    fields_to_set = []
-    field_values = []
-    # loop thru the params passed
-    for key in params:
-        if params.get(key) is not None:
-            # build up the SET statement using the param keys
-            fields_to_set.append(key + "=?")
-            # save the values to be used with the SET statement
-            field_values.append(params[key])
-        
-    # join the SET statement together
-    set_statement = ", ".join(fields_to_set)
-    field_values.append(position)
-    cmd = "UPDATE todos SET "+set_statement+" WHERE position=?"
-    
-    # Update the db.
-    #print(cmd, tuple(field_values))
-    with conn:
-        c.execute(cmd, field_values)
+    params = {k: v for k, v in params.items() if v is not None}
+    print(params)
+    session.query(TodoSQL).filter_by(position=position).update(params)
+    session.commit()
 
 def complete_todo(position):
     '''
         Mark todo as 'COMPLETE'
     '''
-    with conn:
-        update_query = """Update todos set status = ?, completion_time = ? where position = ?"""
-        data = (COMPLETED, datetime.datetime.now().isoformat(), position)
-        c.execute(update_query, data)
+    session.query(TodoSQL).filter_by(position=position).update({"status":COMPLETED, "completion_time": datetime.datetime.now()})
+    session.commit()
 
 def delete_todo(position):
     '''
         Delete Todo from To-Do List
     '''
-    c.execute('select count(*) from todos')
-    count = c.fetchone()[0]
 
-    with conn:
-        delete_query = """DELETE from todos where position = ?"""
-        c.execute(delete_query, (position,))   # second argument tuple
+    # Get the number of rows.
+    rowCount = session.query(TodoSQL).count()
+    print("Row Count : ", rowCount)
 
-        # Move the position of all entries after 'position' by '-1'
-        for pos in range(position+1, count):
-            # print("calling change_position with old_position:", pos, "new_position", pos-1)
-            change_position(pos, pos-1)
+    # session.query.filter(TodoSQL.position == position).delete()
+    session.query(TodoSQL).filter_by(position=position).delete()
+    session.commit()
 
+    # Move the position of all entries after 'position' by '-1'
+    for pos in range(position+1, rowCount+1):
+        print("calling change_position with old_position:", pos, "new_position", pos-1)
+        change_position(pos, pos-1)
 
 def change_position(old_position, new_position):
-    update_query = """Update todos set position = ? where position = ?"""
-    data = (new_position, old_position)
-    c.execute(update_query, data)
-    conn.commit()
+    session.query(TodoSQL).filter_by(position=old_position).update({"position":new_position})
+    session.commit()
+
 
 def remove_all_todos():
     '''
     remove_all_todos from the Todo List
     '''
-    drop_query = """DROP TABLE todos;"""
-    with conn:
-        c.execute(drop_query)
+    # Drop the table and reset the index
+    # Todo.__table__.drop(engine)
+    Base.metadata.drop_all(engine, tables=[TodoSQL.__table__])
+    Base.metadata.create_all(engine, tables=[TodoSQL.__table__])

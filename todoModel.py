@@ -15,7 +15,7 @@ class Todo:
         self.priority = priority
         self.status = status if status is not None else OPEN
         self.position = position if position is not None else None 
-        self.creation_time = creation_time if creation_time is not None else datetime.datetime.now().isoformat()
+        self.creation_time = creation_time if creation_time is not None else None
         self.completion_time = completion_time if completion_time is not None else None
         
     def __repr__(self)->str:
