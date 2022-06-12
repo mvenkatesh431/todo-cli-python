@@ -1,4 +1,3 @@
-import sqlite3
 from todoModel import OPEN, COMPLETED, Todo
 import datetime
 from sqlalchemy import create_engine
