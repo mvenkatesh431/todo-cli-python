@@ -10,6 +10,11 @@ The following CLI sub commands are implemented.
 - `clear` command     - Clear the Todo List by deleting all Todos.
 - `version` command   - Display the version of Todo List CLI.
 
+## Demo:
+Here is a demo of the todo list app.
+
+[![asciicast](https://asciinema.org/a/502436.svg)](https://asciinema.org/a/502436)
+
 ## How to Run:
 
 Please clone the repo and run install the dependencies using the following command.

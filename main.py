@@ -20,7 +20,7 @@ console = Console()
 def add(name: str = typer.Option(..., "--name", "-n"),
             category: str = typer.Option(..., "--category", "-c"), 
             priority: int = typer.Option(3, "--priority", "-p")):
-    typer.echo(f"Adding 'Name:{name}, Category:{category}, Priority:{priority}' to To-Do List")
+    # typer.echo(f"Adding 'Name:{name}, Category:{category}, Priority:{priority}' to To-Do List")
     todoItem = Todo(name, category, priority)
     add_todo(todoItem)
     list()
@@ -33,19 +33,19 @@ def update(position: int, name: str = typer.Option(None, "--name", "-n"),
     '''
         ex: python main.py update 4 --name="Complete To-do project" --category='Python'  --priority=1
     '''
-    typer.echo(f"Updating Todo at {position}. (Note: 'If Position is invalid, No changes will be made.')")
+    # typer.echo(f"Updating Todo at {position}. (Note: 'If Position is invalid, No changes will be made.')")
     update_todo(position, {"name":name, "category":category, "priority":priority})
     list()
 
 @app.command(short_help="Delete a To-do from ToDo List using it's TODOID")
 def delete(position: int):
-    typer.echo(f"Deleting Todo at {position}")
+    # typer.echo(f"Deleting Todo at {position}")
     delete_todo(position)
     list()
 
 @app.command(short_help="Complete a To-do by marking it 'Done' using TODOID")
 def complete(position: int):
-    typer.echo(f"Marking Todo at {position} as 'Done'")
+    # typer.echo(f"Marking Todo at {position} as 'Done'")
     complete_todo(position)
     list()
 
