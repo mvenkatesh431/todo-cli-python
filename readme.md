@@ -1,4 +1,4 @@
-Simple CLI Todo list written in Python based on Rich and Typer libraries. Rich library allows us to display the beautiful Tables with different colors on the Command line.
+Simple CLI Todo list is Todo List CLI App. It is written in Python based on Rich and Typer libraries. Rich library allows us to display the beautiful Tables with different colors on the Command line.
 
 The following CLI sub commands are implemented.
 
@@ -20,7 +20,7 @@ pip install -r requirements.txt
 Run the app using the `python main.py` pass the `--help` option to see all available CLI Options. 
 
 ```
- python main.py --help
+> python main.py --help
 Usage: main.py [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -39,7 +39,7 @@ Commands:
   list      List all To-do's
   update    Update a To-do(Name, category and priority) using TODOID
   version   Display the version
-
+>
 ```
 
 ## Add Command:
@@ -48,7 +48,7 @@ The `add` command used to add a `todo` to the ToDo List.
 You can get the command help using the `--help` with `add` command like below.
 
 ```
- python main.py add --help
+> python main.py add --help
 Usage: main.py add [OPTIONS]
 
 Options:
@@ -56,7 +56,7 @@ Options:
   --category TEXT     [required]
   --priority INTEGER  [default: 3]
   --help              Show this message and exit.
-
+>
 ```
 
 As you can see, `add` command takes three options. `name` (Todo Name), `category` and `priority`
@@ -64,7 +64,7 @@ The Todo `Name` and `Category` are mandatory options. `priority` is optional by 
 
 To add a Todo to Todolist use
 ```
- python main.py add --name="Complete the Todo list Project" --category="Projects" --priority=2 
+> python main.py add --name="Complete the Todo list Project" --category="Projects" --priority=2 
 Adding 'Name:Complete the Todo list Project, Category:Projects, Priority:2' to To-Do List
    
                                                    📝 Todo List ! 🗒️
@@ -73,6 +73,6 @@ Adding 'Name:Complete the Todo list Project, Category:Projects, Priority:2' to T
 ┡━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━┩
 │   1    │ Complete the Todo list Project │ Projects │    2     │   ❌   │ 2022-05-24T00:42:19.381913 │              │
 └────────┴────────────────────────────────┴──────────┴──────────┴────────┴────────────────────────────┴──────────────┘
-
+>
 
 ```

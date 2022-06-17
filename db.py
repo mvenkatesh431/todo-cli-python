@@ -70,7 +70,6 @@ def update_todo(position, params):
         Update Todo Name, Category and Priority using TodoID.
     '''
     params = {k: v for k, v in params.items() if v is not None}
-    print(params)
     session.query(TodoSQL).filter_by(position=position).update(params)
     session.commit()
 
@@ -88,7 +87,6 @@ def delete_todo(position):
 
     # Get the number of rows.
     rowCount = session.query(TodoSQL).count()
-    print("Row Count : ", rowCount)
 
     # session.query.filter(TodoSQL.position == position).delete()
     session.query(TodoSQL).filter_by(position=position).delete()
@@ -96,7 +94,7 @@ def delete_todo(position):
 
     # Move the position of all entries after 'position' by '-1'
     for pos in range(position+1, rowCount+1):
-        print("calling change_position with old_position:", pos, "new_position", pos-1)
+        # print("calling change_position with old_position:", pos, "new_position", pos-1)
         change_position(pos, pos-1)
 
 def change_position(old_position, new_position):

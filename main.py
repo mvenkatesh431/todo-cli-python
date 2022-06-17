@@ -87,7 +87,7 @@ def list():
 
         pclr = get_priority_color(todo.priority)
     
-        table.add_row(f"{str(id)} {str(todo.position)}", todo.name, f'[{clr}]{todo.category}[/{clr}]', f'[{pclr}]{str(todo.priority)}[/{pclr}]',
+        table.add_row(str(id), todo.name, f'[{clr}]{todo.category}[/{clr}]', f'[{pclr}]{str(todo.priority)}[/{pclr}]',
                         status, str(todo.creation_time), str(todo.completion_time) )
 
     console.print(table)
