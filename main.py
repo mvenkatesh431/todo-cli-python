@@ -7,7 +7,7 @@ import random
 
 
 # To-do App Version
-__version__ = "0.5.0"
+__version__ = "1.0.0"
 
 # Initialize the Typer app
 app = typer.Typer()
