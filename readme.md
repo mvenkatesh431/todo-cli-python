@@ -1,4 +1,4 @@
-Simple CLI Todo list is Todo List CLI App. It is written in Python based on Rich and Typer libraries. Rich library allows us to display the beautiful Tables with different colors on the Command line.
+Simple Todo List CLI App - To Manage and Organize your Tasks on Terminal. It is written in Python based on Rich and Typer libraries. Rich library allows us to display the beautiful Tables with different colors on the Command line. We also used Sqlite3 and Sqlalchemy ORM to make data persistence.
 
 The following CLI sub commands are implemented.
 
